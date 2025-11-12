@@ -21,7 +21,7 @@ BASE_ALPHA = "https://www.alphavantage.co/query"
 # ===============================
 # FETCH NEWS (NewsAPI only)
 # ===============================
-def fetch_newsapi_news(ticker, limit=60):
+def fetch_newsapi_news(ticker, limit=50):
     """
     Fetch recent news articles for a ticker using NewsAPI.
     """
