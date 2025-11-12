@@ -1,40 +1,87 @@
 import os
 import requests
-from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-
-
+# Load .env variables
 load_dotenv()
 
-MARKETAUX_KEY = os.getenv("MARKETAUX_API_KEY")
-ALPHA_KEY     = os.getenv("ALPHAVANTAGE_API_KEY")
-BASE_NEWS = "https://api.marketaux.com/v1/news/all"
+# ===============================
+# API KEYS
+# ===============================
+NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
+ALPHA_KEY = os.getenv("ALPHAVANTAGE_KEY")
+
+# ===============================
+# API BASE URLs
+# ===============================
+BASE_NEWS = "https://newsapi.org/v2/everything"
 BASE_ALPHA = "https://www.alphavantage.co/query"
 
-def fetch_news_for_ticker(ticker, limit=40):
-    thirty_days_ago = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+# ===============================
+# FETCH NEWS (NewsAPI only)
+# ===============================
+def fetch_newsapi_news(ticker, limit=60):
+    """
+    Fetch recent news articles for a ticker using NewsAPI.
+    """
+    from_date = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+
     params = {
-        "api_token": MARKETAUX_KEY,
-        "search": ticker,
-        "limit": limit,
-        "countries": "us",
+        "q": ticker,
         "language": "en",
-        "sort": "published_at:desc",
-        "published_after" : thirty_days_ago
+        "from": from_date,
+        "sortBy": "publishedAt",
+        "pageSize": limit,
+        "apiKey": NEWSAPI_KEY
     }
-    r = requests.get(BASE_NEWS, params=params, timeout=30)
-    r.raise_for_status()
-    return r.json().get("data", [])
+
+    try:
+        r = requests.get(BASE_NEWS, params=params, timeout=30)
+        r.raise_for_status()
+        articles = r.json().get("articles", [])
+        formatted = []
+        for art in articles:
+            formatted.append({
+                "title": art.get("title"),
+                "snippet": art.get("description"),
+                "url": art.get("url"),
+                "source": art.get("source", {}).get("name"),
+                "published_at": art.get("publishedAt")
+            })
+        return formatted
+    except Exception as e:
+        print(f"[{ticker}] NewsAPI fetch error: {e}")
+        return []
+
+# ===============================
+# WRAPPER FUNCTION
+# ===============================
+def fetch_news_for_ticker(ticker, limit=60):
+    """
+    Wrapper so we can easily add new sources in future.
+    """
+    return fetch_newsapi_news(ticker, limit=limit)
+
+# ===============================
+# FETCH DAILY OHLC FROM ALPHA VANTAGE
+# ===============================
+import yfinance as yf
 
 def fetch_alpha_daily(symbol):
-    params = {
-        "function": "TIME_SERIES_DAILY",
-        "symbol": symbol,
-        "outputsize": "full",
-        "apikey": ALPHA_KEY
-    }
-    r = requests.get(BASE_ALPHA, params=params, timeout=30)
-    r.raise_for_status()
-    data = r.json().get("Time Series (Daily)", {})
-    return {d: float(v["4. close"]) for d, v in data.items()}
+    """
+    Fetch daily OHLC close prices using Yahoo Finance.
+    Returns {date: close_price}
+    """
+    try:
+        df = yf.download(symbol, period="1y", interval="1d", progress=False)
+        prices = {}
+        for date, row in df.iterrows():
+            prices[str(date.date())] = float(row["Close"])
+        if not prices:
+            print(f"[{symbol}] ⚠️ No price data fetched from Yahoo Finance.")
+        return prices
+    except Exception as e:
+        print(f"[{symbol}] Yahoo Finance fetch error: {e}")
+        return {}
+

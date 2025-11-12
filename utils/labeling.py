@@ -1,49 +1,22 @@
 from datetime import datetime, timedelta
 
-def label_news_item(news_date_str: str, prices: dict):
+def label_news_item(date_str, prices):
     """
-    news_date_str: 'YYYY-MM-DD'
-    prices: dict { 'YYYY-MM-DD': close_price_float }
-    returns 1 (bullish) / 0 (bearish) / None if not possible
+    Given an article date (YYYY-MM-DD) and dict of prices {date: close},
+    return label:
+      1 → bullish (next-day close > same-day close)
+      0 → bearish
+      None → if next-day price not available
     """
-
-    # convert to date object
     try:
-        news_date = datetime.fromisoformat(news_date_str).date()
-    except:
-        return None
+        # normalize date format
+        date_obj = datetime.fromisoformat(date_str[:10])
+        today = date_obj.strftime("%Y-%m-%d")
+        next_day = (date_obj + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    # find base trading day (today or previous valid)
-    base_date = news_date
-    attempts = 0
-    while attempts < 7:  # max 1 week back
-        d_str = base_date.isoformat()
-        if d_str in prices:
-            break
-        base_date = base_date - timedelta(days=1)
-        attempts += 1
-    else:
+        if today in prices and next_day in prices:
+            return 1 if prices[next_day] > prices[today] else 0
+        else:
+            return None
+    except Exception:
         return None
-
-    today_close = prices.get(base_date.isoformat())
-    if today_close is None:
-        return None
-
-    # find next trading day
-    next_date = base_date + timedelta(days=1)
-    attempts = 0
-    while attempts < 7:
-        d_str = next_date.isoformat()
-        if d_str in prices:
-            break
-        next_date = next_date + timedelta(days=1)
-        attempts += 1
-    else:
-        return None
-
-    next_close = prices.get(next_date.isoformat())
-    if next_close is None:
-        return None
-
-    # bullish or bearish
-    return 1 if next_close > today_close else 0

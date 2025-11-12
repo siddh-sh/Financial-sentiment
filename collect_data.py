@@ -15,7 +15,7 @@ from utils.labeling import label_news_item
 # ---------------------------
 load_dotenv()
 TICKERS = os.getenv("DEFAULT_TICKERS", "AAPL,TSLA,NVDA,MSFT").split(",")
-NEWS_LIMIT = int(os.getenv("NEWS_LIMIT", "40"))
+NEWS_LIMIT = int(os.getenv("NEWS_LIMIT", "60"))
 
 DATA_DIR = "data"
 DATASET_CSV = os.path.join(DATA_DIR, "dataset.csv")
@@ -51,12 +51,14 @@ def main():
     rows_new = []
 
     for tk in TICKERS:
-        # 1) Fetch latest news for ticker
+        print(f"\n--- Collecting for {tk} ---")
         try:
             news_items = fetch_news_for_ticker(tk, limit=NEWS_LIMIT)
+            print(f"[{tk}] total combined fetched: {len(news_items)}")
         except Exception as e:
-            print(f"[{tk}] News fetch error: {e}")
+            print(f"[{tk}] News fetch failed: {e}")
             continue
+
 
         # 2) Fetch / cache OHLC for ticker
         try:
