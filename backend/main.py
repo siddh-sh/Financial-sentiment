@@ -66,7 +66,9 @@ def predict_stock_sentiment(request: RequestBody):
 
 @app.get("/tickers")
 def get_available_tickers():
-    dataset_path = os.path.join(os.path.dirname(__file__), "../data/dataset.csv")
+    dataset_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "data", "dataset.csv")
+    )
     print(f"🔍 Looking for dataset at: {os.path.abspath(dataset_path)}")
     if not os.path.exists(dataset_path):
         return JSONResponse({"error": "Dataset not found"}, status_code=404)
