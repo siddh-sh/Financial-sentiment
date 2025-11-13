@@ -5,8 +5,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 import joblib, os, pandas as pd
 
-from utils.api_clients import fetch_news_for_ticker
-from utils.text import clean_text, merge_fields
+from backend.utils.api_clients import fetch_news_for_ticker
+from backend.utils.text import clean_text, merge_fields
 
 app = FastAPI(title="SentimentIQ")
 
