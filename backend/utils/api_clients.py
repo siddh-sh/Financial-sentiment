@@ -11,7 +11,7 @@ load_dotenv()
 # PATH TO DATASET
 # ---------------------------------------
 DATASET_PATH = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../data/dataset.csv")
+    os.path.join(os.path.dirname(__file__), "..", "data", "dataset.csv")
 )
 
 # ---------------------------------------
