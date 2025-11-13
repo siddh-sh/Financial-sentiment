@@ -1,0 +1,17 @@
+# === Core Packages ===
+fastapi==0.115.2
+uvicorn==0.30.1
+pydantic==2.8.2
+
+# === Data Handling ===
+pandas==2.2.3
+numpy==2.1.2
+requests==2.32.3
+python-dotenv==1.0.1
+
+# === Machine Learning ===
+scikit-learn==1.5.2
+joblib==1.4.2
+
+# === Financial & Data Sources ===
+yfinance==0.2.43

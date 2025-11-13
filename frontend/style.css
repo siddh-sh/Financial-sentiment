@@ -1,0 +1,227 @@
+/* ============================================= */
+/* GLOBAL                                         */
+/* ============================================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: linear-gradient(135deg, #0f172a, #3b0764, #0f172a);
+  font-family: "Poppins", sans-serif;
+  color: white;
+  text-align: center;
+  min-height: 100vh;
+}
+
+/* ============================================= */
+/* HEADER                                         */
+/* ============================================= */
+nav {
+  padding: 30px 0 10px;
+}
+nav h1 {
+  font-size: 3rem;
+  font-weight: 800;
+}
+nav span {
+  display: block;
+  font-size: 1rem;
+  opacity: 0.8;
+  margin-top: 6px;
+}
+
+/* ============================================= */
+/* HERO                                           */
+/* ============================================= */
+.hero {
+  margin-top: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.search-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 18px 22px;
+  border-radius: 20px;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.3);
+}
+
+/* Dropdown */
+select {
+  width: 300px;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(120, 40, 200, 0.25);
+  color: white;
+  cursor: pointer;
+  outline: none;
+  transition: 0.3s;
+  box-shadow: 0 0 10px rgba(163, 67, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+select:hover,
+select:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.6),
+              0 0 40px rgba(168, 85, 247, 0.3);
+}
+
+select option {
+  background: #2e1065;
+  color: white;
+}
+
+/* Button */
+button {
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(90deg, #4f46e5, #9333ea);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  box-shadow: 0 0 15px #a855f7, 0 0 30px rgba(168, 85, 247, 0.6);
+  transform: translateY(-2px);
+}
+button:active {
+  transform: scale(0.97);
+}
+
+/* ============================================= */
+/* LOADING                                        */
+/* ============================================= */
+.spinner {
+  border: 6px solid rgba(255,255,255,0.2);
+  border-top-color: #a855f7;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  animation: spin 1s infinite;
+  margin: 25px auto;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.hidden { display: none; }
+
+/* ============================================= */
+/* CHARTS                                         */
+/* ============================================= */
+
+.chart-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  flex-wrap: wrap;
+  margin-top: 50px;
+  padding: 20px;
+
+  /* stays below news */
+  z-index: 1;
+  position: relative;
+}
+
+/* Chart look */
+canvas {
+  width: 400px !important;
+  height: 400px !important;
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 25px rgba(168,85,247,0.25);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  /* IMPORTANT: charts cannot block news clicks */
+  pointer-events: none;
+  position: relative;
+  z-index: 1;
+}
+
+canvas:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.6),
+              0 0 60px rgba(168, 85, 247, 0.4);
+}
+
+/* Mobile charts */
+@media (max-width: 900px) {
+  canvas {
+    width: 320px !important;
+    height: 320px !important;
+  }
+}
+
+/* ============================================= */
+/* NEWS LIST                                      */
+/* ============================================= */
+
+/* Container ABOVE charts */
+#newsContainer {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.news-item {
+  display: block;
+  text-decoration: none;
+  padding: 20px;
+  width: 70%;
+  margin: 15px auto;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.05);
+  transition: 0.25s ease;
+  color: white;
+
+  position: relative;
+  z-index: 10000; /* highest layer */
+  pointer-events: auto;
+}
+
+.news-item:hover {
+  transform: translateX(6px);
+  background: rgba(255,255,255,0.15);
+}
+
+/* ============================================= */
+/* FOOTER                                         */
+/* ============================================= */
+footer {
+  margin-top: 80px;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.green { color: #4ade80; font-weight: 600; }
+.red { color: #f87171; font-weight: 600; }
+/* FORCE charts to stay behind ALL content */
+canvas,
+.chart-row {
+  position: relative !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+/* News stays above charts and clickable */
+#newsContainer,
+.news-item {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}

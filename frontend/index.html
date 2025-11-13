@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💹 SentimentIQ - Stock Sentiment Analyzer</title>
+
+  <!-- ✅ Correct static paths -->
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/script.js" defer></script>
+
+  <!-- Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <!-- HEADER -->
+  <nav>
+    <h1>💹 SentimentIQ</h1>
+    <span>AI-driven Real-Time Stock Sentiment Analyzer</span>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <div class="search-box">
+      <select id="tickerSelect">
+        <option>Loading tickers...</option>
+      </select>
+      <button id="analyzeBtn">Analyze</button>
+    </div>
+  </section>
+
+  <!-- LOADING SECTION -->
+  <section id="loading" class="loading hidden">
+    <div class="spinner"></div>
+    <p>Fetching live financial news...</p>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="resultContainer" class="hidden">
+    <div id="mainCard" class="glass card fade-in"></div>
+
+    <div class="chart-row">
+      <canvas id="sentimentPie"></canvas>
+      <canvas id="confidenceBar"></canvas>
+    </div>
+
+    <h2 class="section-title">📰 Latest News Sentiment</h2>
+    <div id="newsContainer"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    Built with 💜 by <b>Siddh</b> • <b>Anadya</b>
+  </footer>
+</body>
+</html>
