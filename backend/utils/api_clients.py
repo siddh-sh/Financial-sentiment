@@ -1,30 +1,35 @@
 import os
+import pandas as pd
 import requests
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 
 # Load .env variables
 load_dotenv()
 
-# ===============================
-# API KEYS
-# ===============================
-NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
-ALPHA_KEY = os.getenv("ALPHAVANTAGE_KEY")
+# ---------------------------------------
+# PATH TO DATASET
+# ---------------------------------------
+DATASET_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../data/dataset.csv")
+)
 
-# ===============================
-# API BASE URLs
-# ===============================
-BASE_NEWS = "https://newsapi.org/v2/everything"
-BASE_ALPHA = "https://www.alphavantage.co/query"
+# ---------------------------------------
+# LOAD CSV ONCE (FAST)
+# ---------------------------------------
+try:
+    NEWS_DF = pd.read_csv(DATASET_PATH)
+except Exception as e:
+    print("❌ ERROR LOADING DATASET:", e)
+    NEWS_DDF = pd.DataFrame()
 
-# ===============================
-# FETCH NEWS (NewsAPI only)
-# ===============================
-def fetch_newsapi_news(ticker, limit=50):
-    """
-    Fetch recent news articles for a ticker using NewsAPI.
-    """
+# ---------------------------------------
+# API FETCHER (only used by collect_data.py)
+# ---------------------------------------
+def fetch_news_from_api(ticker, limit=50):
+    NEWSAPI_KEY = os.getenv("NEWSAPI_KEY")
+    url = "https://newsapi.org/v2/everything"
+
     from_date = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
 
     params = {
@@ -37,51 +42,63 @@ def fetch_newsapi_news(ticker, limit=50):
     }
 
     try:
-        r = requests.get(BASE_NEWS, params=params, timeout=30)
+        r = requests.get(url, params=params, timeout=25)
         r.raise_for_status()
         articles = r.json().get("articles", [])
+
         formatted = []
-        for art in articles:
+        for a in articles:
             formatted.append({
-                "title": art.get("title"),
-                "snippet": art.get("description"),
-                "url": art.get("url"),
-                "source": art.get("source", {}).get("name"),
-                "published_at": art.get("publishedAt")
+                "ticker": ticker.upper(),
+                "headline": a.get("title"),
+                "summary": a.get("description"),
+                "url": a.get("url"),
+                "date": a.get("publishedAt"),
+                "source": a.get("source", {}).get("name")
             })
+
         return formatted
+
     except Exception as e:
-        print(f"[{ticker}] NewsAPI fetch error: {e}")
+        print(f"API error for {ticker}: {e}")
         return []
 
-# ===============================
-# WRAPPER FUNCTION
-# ===============================
-def fetch_news_for_ticker(ticker, limit=60):
-    """
-    Wrapper so we can easily add new sources in future.
-    """
-    return fetch_newsapi_news(ticker, limit=limit)
 
-# ===============================
-# FETCH DAILY OHLC FROM ALPHA VANTAGE
-# ===============================
-import yfinance as yf
+# ---------------------------------------
+# DATASET FETCHER (used by main.py in production)
+# ---------------------------------------
+def fetch_news_from_dataset(ticker, limit=10):
+    ticker = ticker.upper()
 
-def fetch_alpha_daily(symbol):
-    """
-    Fetch daily OHLC close prices using Yahoo Finance.
-    Returns {date: close_price}
-    """
     try:
-        df = yf.download(symbol, period="1y", interval="1d", progress=False)
-        prices = {}
-        for date, row in df.iterrows():
-            prices[str(date.date())] = float(row["Close"])
-        if not prices:
-            print(f"[{symbol}] ⚠️ No price data fetched from Yahoo Finance.")
-        return prices
-    except Exception as e:
-        print(f"[{symbol}] Yahoo Finance fetch error: {e}")
-        return {}
+        df = NEWS_DF[NEWS_DF["ticker"] == ticker]
+    except Exception:
+        print("❌ Dataset not loaded properly")
+        return []
 
+    if df.empty:
+        print("⚠️ No dataset news for", ticker)
+        return []
+
+    # sort newest → oldest
+    df = df.sort_values("date", ascending=False).head(limit)
+
+    results = []
+    for _, row in df.iterrows():
+        results.append({
+            "title": row.get("headline"),
+            "snippet": row.get("summary"),
+            "url": row.get("url")
+        })
+
+    return results
+
+
+# ---------------------------------------
+# WRAPPER (main function used by backend)
+# ---------------------------------------
+def fetch_news_for_ticker(ticker, limit=10):
+    """
+    On Render/production we only use dataset (faster and no API limits)
+    """
+    return fetch_news_from_dataset(ticker, limit)
