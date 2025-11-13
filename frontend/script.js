@@ -2,13 +2,20 @@ let sentimentChart = null;
 let confidenceChart = null;
 
 // ===============================
+//  BACKEND URL CONFIG
+// ===============================
+const BACKEND_URL = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://127.0.0.1:8000"
+  : "https://financial-sentiment.onrender.com";
+
+// ===============================
 //  LOAD TICKERS FROM BACKEND
 // ===============================
 window.addEventListener("DOMContentLoaded", async () => {
   const tickerSelect = document.getElementById("tickerSelect");
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/tickers");
+    const res = await fetch(`${BACKEND_URL}/tickers`);
     const data = await res.json();
 
     if (data.tickers && data.tickers.length > 0) {
@@ -42,7 +49,7 @@ async function analyze() {
   loading.classList.remove("hidden");
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/predict", {
+    const res = await fetch(`${BACKEND_URL}/predict`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ticker, limit: 8 })
@@ -55,9 +62,6 @@ async function analyze() {
 
     resultBox.classList.remove("hidden");
 
-    // ===============================
-    //  MAIN SUMMARY CARD
-    // ===============================
     const bullish = (data.overall_bullish_prob * 100).toFixed(1);
     const bearish = (100 - bullish).toFixed(1);
 
@@ -66,12 +70,8 @@ async function analyze() {
       <h2 class="${bullish > 50 ? "green" : "red"}">${bullish}% Bullish</h2>
     `;
 
-    // ===============================
-    //  PIE CHART (Bullish vs Bearish)
-    // ===============================
     const ctx1 = document.getElementById("sentimentPie").getContext("2d");
     if (sentimentChart) sentimentChart.destroy();
-
     sentimentChart = new Chart(ctx1, {
       type: "pie",
       data: {
@@ -87,12 +87,8 @@ async function analyze() {
       }
     });
 
-    // ===============================
-    //  CONFIDENCE BAR CHART
-    // ===============================
     const ctx2 = document.getElementById("confidenceBar").getContext("2d");
     if (confidenceChart) confidenceChart.destroy();
-
     confidenceChart = new Chart(ctx2, {
       type: "bar",
       data: {
@@ -112,18 +108,14 @@ async function analyze() {
       }
     });
 
-    // ===============================
-    //  NEWS WITH CLICKABLE LINKS
-    // ===============================
     newsContainer.innerHTML = data.results.map(n => `
-    <a href="${n.url}" target="_blank" rel="noopener noreferrer" class="news-item">
-      <h3>${n.headline}</h3>
-      <p class="${n.direction === 'Bullish' ? 'green' : 'red'}">
-        ${n.direction} (${(n.prob * 100).toFixed(1)}%)
-      </p>
-    </a>
-  `).join("");
-
+      <a href="${n.url}" target="_blank" rel="noopener noreferrer" class="news-item">
+        <h3>${n.headline}</h3>
+        <p class="${n.direction === 'Bullish' ? 'green' : 'red'}">
+          ${n.direction} (${(n.prob * 100).toFixed(1)}%)
+        </p>
+      </a>
+    `).join("");
 
   } catch (err) {
     loading.classList.add("hidden");
